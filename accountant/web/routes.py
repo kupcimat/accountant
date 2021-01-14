@@ -1,10 +1,23 @@
 from typing import List
 
-from aiohttp.web import Request, Response, RouteDef, get, json_response, post
+from aiohttp.web import (
+    HTTPNotFound,
+    Request,
+    Response,
+    RouteDef,
+    get,
+    json_response,
+    post,
+)
 
 from accountant.util import generate_id
-from accountant.storage import create_curl, generate_upload_url
-from accountant.web.config import BUCKET_NAME
+from accountant.storage import (
+    create_curl,
+    exists_object,
+    generate_download_url,
+    generate_upload_url,
+)
+from accountant.web.config import RESULT_BUCKET_NAME, UPLOAD_BUCKET_NAME
 
 
 def create_routes() -> List[RouteDef]:
@@ -16,7 +29,7 @@ def create_routes() -> List[RouteDef]:
 
 async def create_upload_url(request: Request) -> Response:
     document_id = generate_id()
-    presigned_url = generate_upload_url(BUCKET_NAME, document_id)
+    presigned_url = generate_upload_url(UPLOAD_BUCKET_NAME, document_id)
     response = {
         "documentRequest": {
             "upload": {
@@ -24,7 +37,7 @@ async def create_upload_url(request: Request) -> Response:
                 "params": presigned_url.params,
                 "curl": create_curl(presigned_url),
             },
-            "resultUrl": f"/api/documents/{document_id}",
+            "links": {"result": f"/api/documents/{document_id}"},
         }
     }
     return json_response(response, status=201)
@@ -32,11 +45,16 @@ async def create_upload_url(request: Request) -> Response:
 
 async def get_result(request: Request) -> Response:
     document_id = request.match_info["document_id"]
-    # TODO find document result
+    if exists_object(RESULT_BUCKET_NAME, document_id) is False:
+        raise HTTPNotFound()
+
+    presigned_url = generate_download_url(RESULT_BUCKET_NAME, document_id)
     response = {
         "documentResult": {
-            "documentId": document_id,
-            "statements": ["statement1", "statement2", "statement3"],
+            "download": {
+                "url": presigned_url.url,
+            },
+            "links": {"result": f"/api/documents/{document_id}"},
         }
     }
     return json_response(response)

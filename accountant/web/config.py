@@ -1,2 +1,3 @@
 PORT = 8080
-BUCKET_NAME = "accountant-document-uploads"
+UPLOAD_BUCKET_NAME = "accountant-document-uploads"
+RESULT_BUCKET_NAME = "accountant-document-results"
