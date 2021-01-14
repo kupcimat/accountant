@@ -3,6 +3,8 @@ from typing import List
 from aiohttp.web import Request, Response, RouteDef, get, json_response, post
 
 from accountant.util import generate_id
+from accountant.storage import create_curl, generate_upload_url
+from accountant.web.config import BUCKET_NAME
 
 
 def create_routes() -> List[RouteDef]:
@@ -14,11 +16,14 @@ def create_routes() -> List[RouteDef]:
 
 async def create_upload_url(request: Request) -> Response:
     document_id = generate_id()
-    # TODO generate signed S3 upload url
-    upload_url = "upload-url"
+    presigned_url = generate_upload_url(BUCKET_NAME, document_id)
     response = {
         "documentRequest": {
-            "uploadUrl": upload_url,
+            "upload": {
+                "url": presigned_url.url,
+                "params": presigned_url.params,
+                "curl": create_curl(presigned_url),
+            },
             "resultUrl": f"/api/documents/{document_id}",
         }
     }
