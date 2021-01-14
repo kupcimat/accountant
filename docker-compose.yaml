@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile-web
+    environment:
+      PORT: "8080"
+    ports:
+      - "8080:8080"

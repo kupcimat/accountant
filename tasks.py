@@ -16,3 +16,11 @@ def install_deps(ctx):
     Install application and development dependencies
     """
     ctx.run("pip-sync requirements.txt requirements-dev.txt")
+
+
+@task
+def build_images(ctx):
+    """
+    Build application docker images
+    """
+    ctx.run("docker build --file Dockerfile-web --tag web .")
