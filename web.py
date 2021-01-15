@@ -4,7 +4,10 @@ from aiohttp import web
 
 from accountant.web import config, routes
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(filename)s:%(lineno)s %(message)s",
+)
 
 
 if __name__ == "__main__":
