@@ -22,9 +22,15 @@ from accountant.web.config import RESULT_BUCKET_NAME, UPLOAD_BUCKET_NAME
 
 def create_routes() -> List[RouteDef]:
     return [
+        get("/", index),
         post("/api/documents", create_upload_url),
         get("/api/documents/{document_id}", get_result),
     ]
+
+
+async def index(request: Request) -> Response:
+    response = {"links": {"request": "/api/documents"}}
+    return json_response(response)
 
 
 async def create_upload_url(request: Request) -> Response:
