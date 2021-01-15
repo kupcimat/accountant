@@ -2,7 +2,8 @@ import logging
 
 from aiohttp import web
 
-from accountant.web import config, routes
+from accountant import config
+from accountant.web import routes
 
 logging.basicConfig(
     level=logging.INFO,

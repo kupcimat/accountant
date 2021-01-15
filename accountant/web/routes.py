@@ -17,7 +17,7 @@ from accountant.storage import (
     generate_download_url,
     generate_upload_url,
 )
-from accountant.web.config import RESULT_BUCKET_NAME, UPLOAD_BUCKET_NAME
+from accountant.config import RESULT_BUCKET_NAME, UPLOAD_BUCKET_NAME
 
 
 def create_routes() -> List[RouteDef]:
@@ -29,6 +29,7 @@ def create_routes() -> List[RouteDef]:
 
 
 async def index(request: Request) -> Response:
+    # TODO dataclass DTOs
     response = {"links": {"request": "/api/documents"}}
     return json_response(response)
 
@@ -36,6 +37,7 @@ async def index(request: Request) -> Response:
 async def create_upload_url(request: Request) -> Response:
     document_id = generate_id()
     presigned_url = generate_upload_url(UPLOAD_BUCKET_NAME, document_id)
+    # TODO dataclass DTOs
     response = {
         "documentRequest": {
             "upload": {
@@ -55,6 +57,7 @@ async def get_result(request: Request) -> Response:
         raise HTTPNotFound()
 
     presigned_url = generate_download_url(RESULT_BUCKET_NAME, document_id)
+    # TODO dataclass DTOs
     response = {
         "documentResult": {
             "download": {
