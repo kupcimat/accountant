@@ -4,7 +4,7 @@ WORKDIR /app
 # Install dependencies
 COPY requirements.txt .
 RUN pip install pip-tools
-RUN pip-sync requirements.txt --pip-args '--target packages'
+RUN pip-sync requirements.txt --pip-args '--target /packages'
 
 # Copy application
 COPY accountant accountant
@@ -12,7 +12,9 @@ COPY web.py .
 
 # Build production image
 FROM gcr.io/distroless/python3-debian10
+COPY --from=build /packages /packages
 COPY --from=build /app /app
+
 WORKDIR /app
-ENV PYTHONPATH /app/packages
+ENV PYTHONPATH /packages
 CMD ["web.py"]
