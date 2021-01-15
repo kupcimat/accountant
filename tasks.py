@@ -23,4 +23,12 @@ def build_images(ctx):
     """
     Build application docker images
     """
-    ctx.run("docker build --file Dockerfile-web --tag web .")
+    ctx.run("docker build --file Dockerfile-web --tag kupcimat/accountant-web .")
+
+
+@task(build_images)
+def push_images(ctx):
+    """
+    Build application docker images and push them to docker registry
+    """
+    ctx.run("docker push kupcimat/accountant-web")
