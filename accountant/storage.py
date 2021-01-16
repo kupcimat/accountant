@@ -12,6 +12,7 @@ class PresignedUrl:
     params: Dict[str, str] = field(default_factory=dict)
 
 
+# TODO make S3 calls non-blocking
 def generate_upload_url(
     bucket_name: str, object_name: str, expiration: int = 300
 ) -> PresignedUrl:
