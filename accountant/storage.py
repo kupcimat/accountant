@@ -28,7 +28,7 @@ def generate_upload_url(
 
 def generate_download_url(
     bucket_name: str, object_name: str, expiration: int = 300
-) -> str:
+) -> PresignedUrl:
     s3_client = boto3.client("s3")
     try:
         response = s3_client.generate_presigned_url(

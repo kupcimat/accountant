@@ -18,6 +18,7 @@ from accountant.storage import (
     generate_upload_url,
 )
 from accountant.config import RESULT_BUCKET_NAME, UPLOAD_BUCKET_NAME
+from accountant.web.models import DocumentResult, DocumentUpload, Root, serialize
 
 
 def create_routes() -> List[RouteDef]:
@@ -29,26 +30,20 @@ def create_routes() -> List[RouteDef]:
 
 
 async def index(request: Request) -> Response:
-    # TODO dataclass DTOs
-    response = {"links": {"request": "/api/documents"}}
-    return json_response(response)
+    response = Root(links={"upload": "/api/documents"})
+    return json_response(serialize(response))
 
 
 async def create_upload_url(request: Request) -> Response:
     document_id = generate_id()
     presigned_url = generate_upload_url(UPLOAD_BUCKET_NAME, document_id)
-    # TODO dataclass DTOs
-    response = {
-        "documentRequest": {
-            "upload": {
-                "url": presigned_url.url,
-                "params": presigned_url.params,
-                "curl": create_curl(presigned_url),
-            },
-            "links": {"result": f"/api/documents/{document_id}"},
-        }
-    }
-    return json_response(response, status=201)
+    response = DocumentUpload(
+        uploadUrl=presigned_url.url,
+        uploadParams=presigned_url.params,
+        uploadCurl=create_curl(presigned_url),
+        links={"result": f"/api/documents/{document_id}"},
+    )
+    return json_response(serialize(response), status=201)
 
 
 async def get_result(request: Request) -> Response:
@@ -57,13 +52,8 @@ async def get_result(request: Request) -> Response:
         raise HTTPNotFound()
 
     presigned_url = generate_download_url(RESULT_BUCKET_NAME, document_id)
-    # TODO dataclass DTOs
-    response = {
-        "documentResult": {
-            "download": {
-                "url": presigned_url.url,
-            },
-            "links": {"result": f"/api/documents/{document_id}"},
-        }
-    }
-    return json_response(response)
+    response = DocumentResult(
+        resultUrl=presigned_url.url,
+        links={"result": f"/api/documents/{document_id}"},
+    )
+    return json_response(serialize(response))
