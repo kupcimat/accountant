@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import Dict
 
 import boto3
+from botocore.client import Config
 from botocore.exceptions import ClientError
 
 
@@ -30,7 +31,8 @@ def generate_upload_url(
 def generate_download_url(
     bucket_name: str, object_name: str, expiration: int = 300
 ) -> PresignedUrl:
-    s3 = boto3.client("s3")
+    # Invalid signature without addressing_style config
+    s3 = boto3.client("s3", config=Config(s3={"addressing_style": "path"}))
     try:
         response = s3.generate_presigned_url(
             "get_object",
