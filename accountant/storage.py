@@ -58,7 +58,11 @@ def exists_object(bucket_name: str, object_name: str) -> bool:
     return True
 
 
-def create_curl(presigned_url: PresignedUrl) -> str:
+def create_upload_curl(presigned_url: PresignedUrl) -> str:
     form_data = [f"-F '{key}={value}'" for key, value in presigned_url.params.items()]
     form_data.append(f"-F 'file=@filename'")
     return f"curl -L {' '.join(form_data)} {presigned_url.url}"
+
+
+def create_download_curl(presigned_url: PresignedUrl) -> str:
+    return f"curl -L '{presigned_url.url}'"

@@ -18,6 +18,7 @@ class DocumentUpload:
 @dataclass
 class DocumentResult:
     resultUrl: str
+    resultCurl: str
     links: Dict[str, str]
 
 
