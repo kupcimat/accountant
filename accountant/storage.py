@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass, field
-from typing import Dict
+from typing import Dict, IO
 
 import boto3
 from botocore.client import Config
@@ -56,6 +56,24 @@ def exists_object(bucket_name: str, object_name: str) -> bool:
             logging.error("action=exists_object status=error", e)
             raise RuntimeError("Cannot check object")
     return True
+
+
+def download_object(bucket_name: str, object_name: str, file: IO):
+    s3 = boto3.client("s3")
+    try:
+        s3.download_fileobj(bucket_name, object_name, file)
+    except ClientError as e:
+        logging.error("action=download_object status=error", e)
+        raise RuntimeError("Cannot download object")
+
+
+def upload_object(bucket_name: str, object_name: str, file: IO):
+    s3 = boto3.client("s3")
+    try:
+        s3.upload_fileobj(file, bucket_name, object_name)
+    except ClientError as e:
+        logging.error("action=upload_object status=error", e)
+        raise RuntimeError("Cannot upload object")
 
 
 def create_upload_curl(presigned_url: PresignedUrl) -> str:
