@@ -3,6 +3,8 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
+import boto3
+
 
 @dataclass
 class Message:
@@ -12,12 +14,14 @@ class Message:
     message_attributes: Dict[str, Any]
 
 
-def get_queue_url(sqs, queue_name: str) -> str:
+def get_queue_url(queue_name: str) -> str:
+    sqs = boto3.client("sqs")
     response = sqs.get_queue_url(QueueName=queue_name)
     return response["QueueUrl"]
 
 
-def receive_message(sqs, queue_url: str) -> Optional[Message]:
+def receive_message(queue_url: str) -> Optional[Message]:
+    sqs = boto3.client("sqs")
     response = sqs.receive_message(
         QueueUrl=queue_url,
         MaxNumberOfMessages=1,
@@ -31,12 +35,13 @@ def receive_message(sqs, queue_url: str) -> Optional[Message]:
         if "ObjectCreated:Post" in message["Body"]:
             return _parse_message(message)
         else:
-            delete_message(sqs, queue_url, receipt_handle)
+            delete_message(queue_url, receipt_handle)
             logging.warn("action=process_message unknown message")
     return None
 
 
-def delete_message(sqs, queue_url: str, receipt_handle: str):
+def delete_message(queue_url: str, receipt_handle: str):
+    sqs = boto3.client("sqs")
     sqs.delete_message(
         QueueUrl=queue_url,
         ReceiptHandle=receipt_handle,

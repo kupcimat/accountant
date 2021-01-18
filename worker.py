@@ -1,7 +1,5 @@
 import logging
 
-import boto3
-
 from accountant.config import QUEUE_NAME
 from accountant.queue import delete_message, get_queue_url, receive_message
 
@@ -12,12 +10,11 @@ logging.basicConfig(
 
 
 def process_message():
-    sqs = boto3.client("sqs")
-    queue_url = get_queue_url(sqs, QUEUE_NAME)
+    queue_url = get_queue_url(QUEUE_NAME)
 
-    message = receive_message(sqs, queue_url)
+    message = receive_message(queue_url)
     if message:
-        delete_message(sqs, queue_url, message.receipt_handle)
+        delete_message(queue_url, message.receipt_handle)
         logging.info(f"action=process_message status=success message={message}")
     else:
         logging.info("action=process_message status=success message=no_message")
