@@ -11,6 +11,7 @@ services:
       AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
     ports:
       - "8080:8080"
+
   worker:
     build:
       context: .
@@ -20,3 +21,4 @@ services:
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
       AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
+    restart: always
