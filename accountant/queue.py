@@ -20,14 +20,14 @@ def get_queue_url(queue_name: str) -> str:
     return response["QueueUrl"]
 
 
-def receive_message(queue_url: str) -> Optional[Message]:
+def receive_message(queue_url: str, wait_time: int = 10) -> Optional[Message]:
     sqs = boto3.client("sqs")
     response = sqs.receive_message(
         QueueUrl=queue_url,
         MaxNumberOfMessages=1,
         AttributeNames=["SentTimestamp"],
         MessageAttributeNames=["All"],
-        WaitTimeSeconds=5,
+        WaitTimeSeconds=wait_time,
     )
     if "Messages" in response:
         message = response["Messages"][0]
