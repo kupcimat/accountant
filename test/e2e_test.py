@@ -1,6 +1,9 @@
+import pytest
+
 from test.api_client import api_get_sync
 
 
+@pytest.mark.integration
 def test_healthcheck():
     response = api_get_sync("/")
     assert response.status == 200
