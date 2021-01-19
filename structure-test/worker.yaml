@@ -1,0 +1,16 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  env:
+    - key: "PYTHONPATH"
+      value: "/packages"
+  entrypoint: ["/usr/bin/python3.7"]
+  cmd: ["worker.py"]
+
+fileExistenceTests:
+  - name: "worker.py"
+    path: "/app/worker.py"
+    shouldExist: true
+  - name: "/packages"
+    path: "/packages"
+    shouldExist: true
