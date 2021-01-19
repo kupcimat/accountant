@@ -43,3 +43,23 @@ jobs:
       - name: Run tests
         run: |
           pytest
+
+  build-docker:
+    name: Build docker image and run tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install container-structure-test
+        run: |
+          curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64 && chmod +x container-structure-test-linux-amd64 && sudo mv container-structure-test-linux-amd64 /usr/local/bin/container-structure-test
+
+      - name: Build image
+        run: |
+          docker build --file Dockerfile-web --tag web:latest .
+
+      - name: Run tests
+        run: |
+          container-structure-test test --image web:latest --config config.yaml
