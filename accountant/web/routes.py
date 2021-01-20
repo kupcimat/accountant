@@ -59,9 +59,9 @@ async def get_result(request: Request) -> Response:
     document_id = request.match_info["document_id"]
     if exists_object(RESULT_BUCKET_NAME, document_id) is False:
         if exists_object(UPLOAD_BUCKET_NAME, document_id) is False:
-            raise HTTPNotFound()
+            raise HTTPNotFound(text="")
         else:
-            raise HTTPAccepted()
+            raise HTTPAccepted(text="")
 
     presigned_url = generate_download_url(RESULT_BUCKET_NAME, document_id)
     response = DocumentResult(
