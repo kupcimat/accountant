@@ -1,9 +1,8 @@
-import asyncio
 import time
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, TypeVar
 
-from aiohttp import ClientSession
+import requests
 
 
 T = TypeVar("T")
@@ -27,14 +26,9 @@ class ApiResponse:
     data: Dict[str, Any]
 
 
-async def api_get(uri: str) -> ApiResponse:
-    async with ClientSession() as session:
-        async with session.get(f"{HOST}{uri}") as response:
-            return ApiResponse(
-                status=response.status,
-                data=await response.json(),
-            )
-
-
-def api_get_sync(uri: str) -> ApiResponse:
-    return asyncio.run(api_get(uri))
+def api_get(uri: str) -> ApiResponse:
+    response = requests.get(f"{HOST}{uri}")
+    return ApiResponse(
+        status=response.status_code,
+        data=response.json(),
+    )
