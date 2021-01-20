@@ -12,7 +12,7 @@ from aiohttp.web import (
     post,
 )
 
-from accountant.util import generate_id
+from accountant.config import RESULT_BUCKET_NAME, UPLOAD_BUCKET_NAME
 from accountant.storage import (
     create_download_curl,
     create_upload_curl,
@@ -20,14 +20,8 @@ from accountant.storage import (
     generate_download_url,
     generate_upload_url,
 )
-from accountant.config import RESULT_BUCKET_NAME, UPLOAD_BUCKET_NAME
-from accountant.web.models import (
-    DocumentRequest,
-    DocumentResult,
-    DocumentUpload,
-    Root,
-    serialize,
-)
+from accountant.util import generate_id, serialize
+from accountant.web.models import DocumentRequest, DocumentResult, DocumentUpload, Root
 
 
 def create_routes() -> List[RouteDef]:
