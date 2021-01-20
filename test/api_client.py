@@ -30,5 +30,22 @@ def api_get(uri: str) -> ApiResponse:
     response = requests.get(f"{HOST}{uri}")
     return ApiResponse(
         status=response.status_code,
-        data=response.json(),
+        data=response.json() if response.content else {},
     )
+
+
+def api_post(uri: str, json: Dict[str, Any]) -> ApiResponse:
+    response = requests.post(f"{HOST}{uri}", json=json)
+    return ApiResponse(
+        status=response.status_code,
+        data=response.json() if response.content else {},
+    )
+
+
+def download_file(url: str) -> str:
+    response = requests.get(url)
+    return response.text
+
+
+def upload_file(url: str, data: Any, headers: Dict[str, str]):
+    requests.put(url, data=data, headers=headers)
