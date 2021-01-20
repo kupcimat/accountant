@@ -3,7 +3,7 @@ import tempfile
 
 from accountant.config import QUEUE_NAME, RESULT_BUCKET_NAME, UPLOAD_BUCKET_NAME
 from accountant.queue import delete_message, get_queue_url, receive_message
-from accountant.storage import download_object, upload_object
+from accountant.storage import download_object, get_object_metadata, upload_object
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,10 +18,11 @@ def process_message():
     if message:
         # TODO process PDF
         with tempfile.NamedTemporaryFile(delete=True) as file:
+            metadata = get_object_metadata(UPLOAD_BUCKET_NAME, message.s3_object_name)
             download_object(UPLOAD_BUCKET_NAME, message.s3_object_name, file)
             file.seek(0)
             document = file.read()
-            logging.info(f"action=download_file file={document}")
+            logging.info(f"action=download_file file={document} metadata={metadata}")
         with tempfile.NamedTemporaryFile(delete=True) as file:
             result = b"tmp result\n"
             file.write(result)

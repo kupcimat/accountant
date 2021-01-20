@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, IO
+from typing import Dict, IO, Optional
 
 import boto3
 from botocore.client import Config
@@ -39,17 +39,22 @@ def _generate_presigned_url(
         raise RuntimeError("Cannot generate presigned url")
 
 
-def exists_object(bucket_name: str, object_name: str) -> bool:
+def get_object_metadata(bucket_name: str, object_name: str) -> Optional[Dict[str, str]]:
     s3 = boto3.client("s3")
     try:
-        s3.head_object(Bucket=bucket_name, Key=object_name)
+        response = s3.head_object(Bucket=bucket_name, Key=object_name)
+        return response["Metadata"]
     except ClientError as e:
         if e.response["Error"]["Code"] == "404":
-            return False
+            return None
         else:
-            logging.error("action=exists_object status=error", e)
+            logging.error("action=get_object_metadata status=error", e)
             raise RuntimeError("Cannot check object")
-    return True
+
+
+def exists_object(bucket_name: str, object_name: str) -> bool:
+    metadata = get_object_metadata(bucket_name, object_name)
+    return metadata is not None
 
 
 def download_object(bucket_name: str, object_name: str, file: IO):
