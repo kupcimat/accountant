@@ -1,41 +1,71 @@
+import json
 import logging
+import os
 import tempfile
 
 from accountant.config import QUEUE_NAME, RESULT_BUCKET_NAME, UPLOAD_BUCKET_NAME
-from accountant.queue import delete_message, get_queue_url, receive_message
+from accountant.queue import Message, delete_message, get_queue_url, receive_message
 from accountant.storage import download_object, get_object_metadata, upload_object
+from accountant.util import serialize, serialize_list
+from accountant.worker.models import Error, WorkerException
+from accountant.worker.pdf import parse_document
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(filename)s:%(lineno)s %(message)s",
 )
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
 
-def process_message():
+def process_message(message: Message):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        document_file = os.path.join(tmp_dir, "document")
+        result_file = os.path.join(tmp_dir, "result")
+
+        # Download document and metadata
+        download_object(UPLOAD_BUCKET_NAME, message.s3_object_name, document_file)
+        metadata = get_object_metadata(UPLOAD_BUCKET_NAME, message.s3_object_name)
+
+        # Parse document and write result
+        transactions = parse_document(document_file, metadata)
+        with open(result_file, "w") as file:
+            json.dump(serialize_list(transactions), file)
+
+        # Upload result
+        upload_object(RESULT_BUCKET_NAME, message.s3_object_name, result_file)
+
+
+def process_error(message: Message, error_message: str):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        error_file = os.path.join(tmp_dir, "error")
+
+        # Create and write error
+        error = Error(id="error.worker", message=error_message)
+        with open(error_file, "w") as file:
+            json.dump(serialize(error), file)
+
+        # Upload error
+        upload_object(RESULT_BUCKET_NAME, message.s3_object_name, error_file)
+
+
+def process_task():
     queue_url = get_queue_url(QUEUE_NAME)
-
     message = receive_message(queue_url)
     if message:
-        # TODO process PDF
-        with tempfile.NamedTemporaryFile(delete=True) as file:
-            metadata = get_object_metadata(UPLOAD_BUCKET_NAME, message.s3_object_name)
-            download_object(UPLOAD_BUCKET_NAME, message.s3_object_name, file)
-            file.seek(0)
-            document = file.read()
-            logging.info(f"action=download_file file={document} metadata={metadata}")
-        with tempfile.NamedTemporaryFile(delete=True) as file:
-            result = b"tmp result\n"
-            file.write(result)
-            file.seek(0)
-            upload_object(RESULT_BUCKET_NAME, message.s3_object_name, file)
-        delete_message(queue_url, message.receipt_handle)
-        logging.info(f"action=process_message status=success message={message}")
+        try:
+            process_message(message)
+            delete_message(queue_url, message)
+            logging.info(f"action=process_task status=success message={message}")
+        except WorkerException as e:
+            process_error(message, e.message)
+            delete_message(queue_url, message)
+            logging.error(f"action=process_task status=error message={e.message}", e)
     else:
-        logging.info("action=process_message status=success message=no_message")
+        logging.info("action=process_task status=success message=no_message")
 
 
 if __name__ == "__main__":
     try:
-        process_message()
+        process_task()
     except Exception as e:
-        logging.error("action=process_message status=error", e)
+        logging.error("action=process_task status=error", e)

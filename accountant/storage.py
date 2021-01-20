@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, IO, Optional
+from typing import Dict, Optional
 
 import boto3
 from botocore.client import Config
@@ -57,19 +57,19 @@ def exists_object(bucket_name: str, object_name: str) -> bool:
     return metadata is not None
 
 
-def download_object(bucket_name: str, object_name: str, file: IO):
+def download_object(bucket_name: str, object_name: str, file_name: str):
     s3 = boto3.client("s3")
     try:
-        s3.download_fileobj(bucket_name, object_name, file)
+        s3.download_file(bucket_name, object_name, file_name)
     except ClientError as e:
         logging.error("action=download_object status=error", e)
         raise RuntimeError("Cannot download object")
 
 
-def upload_object(bucket_name: str, object_name: str, file: IO):
+def upload_object(bucket_name: str, object_name: str, file_name: str):
     s3 = boto3.client("s3")
     try:
-        s3.upload_fileobj(file, bucket_name, object_name)
+        s3.upload_file(file_name, bucket_name, object_name)
     except ClientError as e:
         logging.error("action=upload_object status=error", e)
         raise RuntimeError("Cannot upload object")

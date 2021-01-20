@@ -35,12 +35,16 @@ def receive_message(queue_url: str, wait_time: int = 10) -> Optional[Message]:
         if "ObjectCreated:Put" in message["Body"]:
             return _parse_message(message)
         else:
-            delete_message(queue_url, receipt_handle)
+            _delete_message(queue_url, receipt_handle)
             logging.warn("action=process_message unknown message")
     return None
 
 
-def delete_message(queue_url: str, receipt_handle: str):
+def delete_message(queue_url: str, message: Message):
+    _delete_message(queue_url, message.receipt_handle)
+
+
+def _delete_message(queue_url: str, receipt_handle: str):
     sqs = boto3.client("sqs")
     sqs.delete_message(
         QueueUrl=queue_url,
