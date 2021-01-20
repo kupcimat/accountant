@@ -8,9 +8,13 @@ class Root:
 
 
 @dataclass
+class DocumentRequest:
+    documentType: str
+
+
+@dataclass
 class DocumentUpload:
     uploadUrl: str
-    uploadParams: Dict[str, str]
     uploadCurl: str
     links: Dict[str, str]
 

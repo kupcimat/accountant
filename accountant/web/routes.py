@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from typing import List
 
 from aiohttp.web import (
@@ -20,7 +21,13 @@ from accountant.storage import (
     generate_upload_url,
 )
 from accountant.config import RESULT_BUCKET_NAME, UPLOAD_BUCKET_NAME
-from accountant.web.models import DocumentResult, DocumentUpload, Root, serialize
+from accountant.web.models import (
+    DocumentRequest,
+    DocumentResult,
+    DocumentUpload,
+    Root,
+    serialize,
+)
 
 
 def create_routes() -> List[RouteDef]:
@@ -38,11 +45,11 @@ async def index(request: Request) -> Response:
 
 async def create_upload_url(request: Request) -> Response:
     document_id = generate_id()
-    presigned_url = generate_upload_url(UPLOAD_BUCKET_NAME, document_id)
+    metadata = asdict(DocumentRequest(documentType="document:kb:pdf"))
+    presigned_url = generate_upload_url(UPLOAD_BUCKET_NAME, document_id, metadata)
     response = DocumentUpload(
-        uploadUrl=presigned_url.url,
-        uploadParams=presigned_url.params,
-        uploadCurl=create_upload_curl(presigned_url),
+        uploadUrl=presigned_url,
+        uploadCurl=create_upload_curl(presigned_url, metadata),
         links={"result": f"/api/documents/{document_id}"},
     )
     return json_response(serialize(response), status=201)
@@ -58,7 +65,7 @@ async def get_result(request: Request) -> Response:
 
     presigned_url = generate_download_url(RESULT_BUCKET_NAME, document_id)
     response = DocumentResult(
-        resultUrl=presigned_url.url,
+        resultUrl=presigned_url,
         resultCurl=create_download_curl(presigned_url),
         links={"result": f"/api/documents/{document_id}"},
     )

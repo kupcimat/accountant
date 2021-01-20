@@ -32,7 +32,7 @@ def receive_message(queue_url: str, wait_time: int = 10) -> Optional[Message]:
     if "Messages" in response:
         message = response["Messages"][0]
         receipt_handle = message["ReceiptHandle"]
-        if "ObjectCreated:Post" in message["Body"]:
+        if "ObjectCreated:Put" in message["Body"]:
             return _parse_message(message)
         else:
             delete_message(queue_url, receipt_handle)

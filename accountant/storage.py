@@ -1,5 +1,4 @@
 import logging
-from dataclasses import dataclass, field
 from typing import Dict, IO
 
 import boto3
@@ -7,42 +6,37 @@ from botocore.client import Config
 from botocore.exceptions import ClientError
 
 
-@dataclass
-class PresignedUrl:
-    url: str
-    params: Dict[str, str] = field(default_factory=dict)
-
-
 # TODO make S3 calls non-blocking
 def generate_upload_url(
-    bucket_name: str, object_name: str, expiration: int = 300
-) -> PresignedUrl:
-    s3 = boto3.client("s3")
-    try:
-        response = s3.generate_presigned_post(
-            bucket_name, object_name, ExpiresIn=expiration
-        )
-        return PresignedUrl(url=response["url"], params=response["fields"])
-    except ClientError as e:
-        logging.error("action=generate_upload_url status=error", e)
-        raise RuntimeError("Cannot generate upload url")
+    bucket_name: str, object_name: str, metadata: Dict[str, str]
+) -> str:
+    return _generate_presigned_url(bucket_name, object_name, "put_object", metadata)
 
 
-def generate_download_url(
-    bucket_name: str, object_name: str, expiration: int = 300
-) -> PresignedUrl:
-    # Invalid signature without addressing_style config
+def generate_download_url(bucket_name: str, object_name: str) -> str:
+    return _generate_presigned_url(bucket_name, object_name, "get_object")
+
+
+def _generate_presigned_url(
+    bucket_name: str,
+    object_name: str,
+    client_method: str,
+    metadata: Dict[str, str] = None,
+    expiration: int = 300,
+) -> str:
+    params = {"Bucket": bucket_name, "Key": object_name}
+    if metadata:
+        params["Metadata"] = metadata
+    # Invalid signature without configuring addressing_style
     s3 = boto3.client("s3", config=Config(s3={"addressing_style": "path"}))
     try:
-        response = s3.generate_presigned_url(
-            "get_object",
-            Params={"Bucket": bucket_name, "Key": object_name},
-            ExpiresIn=expiration,
+        url = s3.generate_presigned_url(
+            client_method, Params=params, ExpiresIn=expiration
         )
-        return PresignedUrl(url=response)
+        return url
     except ClientError as e:
-        logging.error("action=generate_download_url status=error", e)
-        raise RuntimeError("Cannot generate download url")
+        logging.error("action=generate_presigned_url status=error", e)
+        raise RuntimeError("Cannot generate presigned url")
 
 
 def exists_object(bucket_name: str, object_name: str) -> bool:
@@ -76,11 +70,12 @@ def upload_object(bucket_name: str, object_name: str, file: IO):
         raise RuntimeError("Cannot upload object")
 
 
-def create_upload_curl(presigned_url: PresignedUrl) -> str:
-    form_data = [f"-F '{key}={value}'" for key, value in presigned_url.params.items()]
-    form_data.append(f"-F 'file=@filename'")
-    return f"curl -L {' '.join(form_data)} {presigned_url.url}"
+def create_upload_curl(url: str, metadata: Dict[str, str]) -> str:
+    headers = " ".join(
+        [f"-H 'x-amz-meta-{key}: {value}'" for key, value in metadata.items()]
+    )
+    return f"curl -X PUT {headers} --upload-file filename '{url}'"
 
 
-def create_download_curl(presigned_url: PresignedUrl) -> str:
-    return f"curl -L '{presigned_url.url}'"
+def create_download_curl(url: str) -> str:
+    return f"curl '{url}'"
