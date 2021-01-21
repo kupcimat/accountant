@@ -11,7 +11,7 @@ STATEMENT_REGEX = (
     r"([\w\s]+?)"  # description
     r"(\d+-?\d+/\d{4})\s+"  # account
     r"(\d+)\s+"  # variable_symbol
-    r"(-?[\d ,]+)"  # amount
+    r"(-?[\d ]+,\d+)"  # amount
 )
 
 
