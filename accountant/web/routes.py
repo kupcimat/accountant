@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from typing import List
+from typing import Dict, List
 
 from aiohttp.web import (
     HTTPAccepted,
@@ -40,10 +40,13 @@ async def index(request: Request) -> Response:
 async def create_upload_url(request: Request) -> Response:
     document_id = generate_id()
     metadata = asdict(DocumentRequest(documentType="document:kb:pdf"))
+
     presigned_url = generate_upload_url(UPLOAD_BUCKET_NAME, document_id, metadata)
+    presigned_headers = create_headers(metadata)
     response = DocumentUpload(
         uploadUrl=presigned_url,
-        uploadCurl=create_upload_curl(presigned_url, metadata),
+        uploadHeaders=presigned_headers,
+        uploadCurl=create_upload_curl(presigned_url, presigned_headers),
         links={"result": f"/api/documents/{document_id}"},
     )
     return json_response(serialize(response), status=201)
@@ -64,3 +67,7 @@ async def get_result(request: Request) -> Response:
         links={"result": f"/api/documents/{document_id}"},
     )
     return json_response(serialize(response))
+
+
+def create_headers(metadata: Dict[str, str]) -> Dict[str, str]:
+    return {f"x-amz-meta-{key}": value for key, value in metadata.items()}

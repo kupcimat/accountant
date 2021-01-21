@@ -75,11 +75,9 @@ def upload_object(bucket_name: str, object_name: str, file_name: str):
         raise RuntimeError("Cannot upload object")
 
 
-def create_upload_curl(url: str, metadata: Dict[str, str]) -> str:
-    headers = " ".join(
-        [f"-H 'x-amz-meta-{key}: {value}'" for key, value in metadata.items()]
-    )
-    return f"curl -X PUT {headers} --upload-file filename '{url}'"
+def create_upload_curl(url: str, headers: Dict[str, str]) -> str:
+    curl_headers = " ".join([f"-H '{key}: {value}'" for key, value in headers.items()])
+    return f"curl -X PUT {curl_headers} --upload-file filename '{url}'"
 
 
 def create_download_curl(url: str) -> str:

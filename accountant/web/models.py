@@ -15,6 +15,7 @@ class DocumentRequest:
 @dataclass
 class DocumentUpload:
     uploadUrl: str
+    uploadHeaders: Dict[str, str]
     uploadCurl: str
     links: Dict[str, str]
 

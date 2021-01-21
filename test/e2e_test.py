@@ -19,14 +19,11 @@ def test_e2e():
     assert "documentUpload" in response.data
 
     upload_url = response.data["documentUpload"]["uploadUrl"]
+    upload_headers = response.data["documentUpload"]["uploadHeaders"]
     result_uri = response.data["documentUpload"]["links"]["result"]
 
     # Upload test file
-    upload_file(
-        upload_url,
-        file_name="test/resources/document.pdf",
-        headers={"x-amz-meta-documentType": "document:kb:pdf"},
-    )
+    upload_file(upload_url, upload_headers, file_name="test/resources/document.pdf")
 
     # Wait for result
     response = poll(

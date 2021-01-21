@@ -51,6 +51,6 @@ def download_file(url: str) -> str:
     return response.text
 
 
-def upload_file(url: str, file_name: str, headers: Dict[str, str]):
+def upload_file(url: str, headers: Dict[str, str], file_name: str):
     with open(file_name, "rb") as file:
         requests.put(url, data=file, headers=headers)
