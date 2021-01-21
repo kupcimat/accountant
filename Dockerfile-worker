@@ -1,4 +1,4 @@
-FROM python:3-slim AS build
+FROM python:3.9-slim AS build
 WORKDIR /app
 
 # Install dependencies
@@ -11,10 +11,10 @@ COPY accountant accountant
 COPY worker.py .
 
 # Build production image
-FROM gcr.io/distroless/python3-debian10
+FROM python:3.9-alpine
 COPY --from=build /packages /packages
 COPY --from=build /app /app
 
 WORKDIR /app
 ENV PYTHONPATH /packages
-CMD ["worker.py"]
+CMD ["python", "worker.py"]
