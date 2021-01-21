@@ -4,8 +4,8 @@ metadataTest:
   env:
     - key: "PYTHONPATH"
       value: "/packages"
-  entrypoint: ["/usr/bin/python3.7"]
-  cmd: ["worker.py"]
+  entrypoint: []
+  cmd: ["python", "worker.py"]
 
 fileExistenceTests:
   - name: "worker.py"

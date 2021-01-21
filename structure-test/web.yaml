@@ -4,8 +4,8 @@ metadataTest:
   env:
     - key: "PYTHONPATH"
       value: "/packages"
-  entrypoint: ["/usr/bin/python3.7"]
-  cmd: ["web.py"]
+  entrypoint: []
+  cmd: ["python", "web.py"]
 
 fileExistenceTests:
   - name: "web.py"
