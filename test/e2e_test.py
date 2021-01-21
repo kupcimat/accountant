@@ -1,3 +1,4 @@
+import json
 import pytest
 
 from test.api_client import api_get, api_post, download_file, poll, upload_file
@@ -23,7 +24,7 @@ def test_e2e():
     # Upload test file
     upload_file(
         upload_url,
-        data=b"test data",
+        file_name="test/resources/document.pdf",
         headers={"x-amz-meta-documentType": "document:kb:pdf"},
     )
 
@@ -39,4 +40,6 @@ def test_e2e():
 
     # Download result file
     result = download_file(result_url)
-    assert result == "tmp result\n"
+    actual_json = json.loads(result)
+    expected_json = json.load(open("test/resources/result.json"))
+    assert actual_json == expected_json

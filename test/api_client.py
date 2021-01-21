@@ -11,8 +11,12 @@ HOST = "http://localhost:8080"
 
 
 def poll(
-    callable: Callable[[], T], condition: Callable[[T], bool], wait_time: int = 2
+    callable: Callable[[], T],
+    condition: Callable[[T], bool],
+    wait_time: int = 2,
+    timeout: int = 60,
 ) -> T:
+    # TODO timeout
     result = callable()
     while not condition(result):
         time.sleep(wait_time)
@@ -47,5 +51,6 @@ def download_file(url: str) -> str:
     return response.text
 
 
-def upload_file(url: str, data: Any, headers: Dict[str, str]):
-    requests.put(url, data=data, headers=headers)
+def upload_file(url: str, file_name: str, headers: Dict[str, str]):
+    with open(file_name, "rb") as file:
+        requests.put(url, data=file, headers=headers)

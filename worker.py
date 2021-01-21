@@ -29,7 +29,7 @@ def process_message(message: Message):
         # Parse document and write result
         transactions = parse_document(document_file, metadata)
         with open(result_file, "w") as file:
-            json.dump(serialize_list(transactions), file)
+            json.dump(serialize_list(transactions), file, sort_keys=True)
 
         # Upload result
         upload_object(RESULT_BUCKET_NAME, message.s3_object_name, result_file)
@@ -42,7 +42,7 @@ def process_error(message: Message, error_message: str):
         # Create and write error
         error = Error(id="error.worker", message=error_message)
         with open(error_file, "w") as file:
-            json.dump(serialize(error), file)
+            json.dump(serialize(error), file, sort_keys=True)
 
         # Upload error
         upload_object(RESULT_BUCKET_NAME, message.s3_object_name, error_file)

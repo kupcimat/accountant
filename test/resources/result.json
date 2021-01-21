@@ -1,0 +1,11 @@
+[
+    {
+        "transaction": {
+            "account": "123456789/0000",
+            "amount": "-1 234,00",
+            "date": "04.05.2021",
+            "description": "SW Merch",
+            "variable_symbol": "12345"
+        }
+    }
+]
