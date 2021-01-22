@@ -115,3 +115,7 @@ Adding new types of documents shouldn't be too complicated. The REST API already
   }
 }
 ```
+
+## PDF Parsing
+
+The actual PDF parsing is very simple and not very efficient. It extracts all text from page and then applies simple regular expression to get transaction data. It was not the main focus of the application and could definitelly be improved.
