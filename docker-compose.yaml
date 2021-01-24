@@ -6,9 +6,11 @@ services:
       dockerfile: Dockerfile-web
     environment:
       PORT: "8080"
-      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
-      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID-id}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY-key}"
+      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION-region}"
+      AWS_ENDPOINT_URL: "http://localstack:4566"
+      AWS_ENDPOINT_URL_LOCALHOST: "http://localhost:4566"
     ports:
       - "8080:8080"
 
@@ -18,7 +20,20 @@ services:
       dockerfile: Dockerfile-worker
     environment:
       QUEUE_NAME: "accountant-worker-queue"
-      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
-      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID-id}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY-key}"
+      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION-region}"
+      AWS_ENDPOINT_URL: "http://localstack:4566"
     restart: always
+
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,sqs
+      - DEBUG=${DEBUG- }
+      - DATA_DIR=${DATA_DIR- }
+    volumes:
+      - "./localstack:/docker-entrypoint-initaws.d"
+      - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"

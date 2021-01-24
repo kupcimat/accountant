@@ -3,7 +3,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-import boto3
+from accountant.config import boto3_client
 
 
 @dataclass
@@ -15,13 +15,13 @@ class Message:
 
 
 def get_queue_url(queue_name: str) -> str:
-    sqs = boto3.client("sqs")
+    sqs = boto3_client("sqs")
     response = sqs.get_queue_url(QueueName=queue_name)
     return response["QueueUrl"]
 
 
 def receive_message(queue_url: str, wait_time: int = 10) -> Optional[Message]:
-    sqs = boto3.client("sqs")
+    sqs = boto3_client("sqs")
     response = sqs.receive_message(
         QueueUrl=queue_url,
         MaxNumberOfMessages=1,
@@ -45,7 +45,7 @@ def delete_message(queue_url: str, message: Message):
 
 
 def _delete_message(queue_url: str, receipt_handle: str):
-    sqs = boto3.client("sqs")
+    sqs = boto3_client("sqs")
     sqs.delete_message(
         QueueUrl=queue_url,
         ReceiptHandle=receipt_handle,

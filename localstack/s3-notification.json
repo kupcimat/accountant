@@ -1,0 +1,10 @@
+{
+    "QueueConfigurations": [
+        {
+            "QueueArn": "arn:aws:sqs:*:*:accountant-worker-queue",
+            "Events": [
+                "s3:ObjectCreated:*"
+            ]
+        }
+    ]
+}
