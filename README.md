@@ -87,7 +87,12 @@ Testing and deployment pipelines are implemented using GitHub Actions. Every com
 
 ### Integration Tests
 
-There are two [integration tests](test/e2e_test.py) which require running application and can test the the whole document lifecycle. You can run them locally with the application using [docker-compose.yaml](docker-compose.yaml), but it requires to setup S3 and SQS services on AWS. I think they could be replaced by [localstack](https://github.com/localstack/localstack) in the future, to run the integration tests locally without AWS dependencies. The same tests could be also used to verify the production deployment.
+There are two [integration tests](test/e2e_test.py) which require running application and can test the the whole document lifecycle. You can run them locally with the application using [docker-compose.yaml](docker-compose.yaml). AWS services are simulated by [localstack](https://github.com/localstack/localstack). The same tests could be also used to verify the production deployment.
+
+```sh
+docker-compose up
+pytest -m integration
+```
 
 ## Extensibility
 

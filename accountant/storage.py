@@ -1,9 +1,10 @@
 import logging
 from typing import Dict, Optional
 
-import boto3
 from botocore.client import Config
 from botocore.exceptions import ClientError
+
+from accountant.config import boto3_client, boto3_client_localhost
 
 
 # TODO make S3 calls non-blocking
@@ -28,19 +29,19 @@ def _generate_presigned_url(
     if metadata:
         params["Metadata"] = metadata
     # Invalid signature without configuring addressing_style
-    s3 = boto3.client("s3", config=Config(s3={"addressing_style": "path"}))
+    s3 = boto3_client_localhost("s3", config=Config(s3={"addressing_style": "path"}))
     try:
         url = s3.generate_presigned_url(
             client_method, Params=params, ExpiresIn=expiration
         )
         return url
     except ClientError as e:
-        logging.error("action=generate_presigned_url status=error", e)
+        logging.exception("action=generate_presigned_url status=error")
         raise RuntimeError("Cannot generate presigned url")
 
 
 def get_object_metadata(bucket_name: str, object_name: str) -> Optional[Dict[str, str]]:
-    s3 = boto3.client("s3")
+    s3 = boto3_client("s3")
     try:
         response = s3.head_object(Bucket=bucket_name, Key=object_name)
         return response["Metadata"]
@@ -48,7 +49,7 @@ def get_object_metadata(bucket_name: str, object_name: str) -> Optional[Dict[str
         if e.response["Error"]["Code"] == "404":
             return None
         else:
-            logging.error("action=get_object_metadata status=error", e)
+            logging.exception("action=get_object_metadata status=error")
             raise RuntimeError("Cannot check object")
 
 
@@ -58,20 +59,20 @@ def exists_object(bucket_name: str, object_name: str) -> bool:
 
 
 def download_object(bucket_name: str, object_name: str, file_name: str):
-    s3 = boto3.client("s3")
+    s3 = boto3_client("s3")
     try:
         s3.download_file(bucket_name, object_name, file_name)
     except ClientError as e:
-        logging.error("action=download_object status=error", e)
+        logging.exception("action=download_object status=error")
         raise RuntimeError("Cannot download object")
 
 
 def upload_object(bucket_name: str, object_name: str, file_name: str):
-    s3 = boto3.client("s3")
+    s3 = boto3_client("s3")
     try:
         s3.upload_file(file_name, bucket_name, object_name)
     except ClientError as e:
-        logging.error("action=upload_object status=error", e)
+        logging.exception("action=upload_object status=error")
         raise RuntimeError("Cannot upload object")
 
 

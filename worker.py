@@ -59,7 +59,7 @@ def process_task():
         except WorkerException as e:
             process_error(message, e.message)
             delete_message(queue_url, message)
-            logging.error(f"action=process_task status=error message={e.message}", e)
+            logging.exception(f"action=process_task status=error message={e.message}")
     else:
         logging.info("action=process_task status=success message=no_message")
 
@@ -68,4 +68,4 @@ if __name__ == "__main__":
     try:
         process_task()
     except Exception as e:
-        logging.error("action=process_task status=error", e)
+        logging.exception("action=process_task status=error")
